@@ -1,55 +1,64 @@
 # Threads Follow-Chéo Bot 🤖
 
-Tự động follow và comment "Đã follow ạ" trên topic **follow chéo** của Threads.
+Bộ công cụ tự động hóa quá trình "follow chéo" trên Threads để tăng follow hiệu quả và an toàn.
 
-## Cách hoạt động
+## 🚀 Cách 1: Sử dụng Chrome Extension (Khuyên dùng)
 
-1. Kết nối vào Chrome mà bạn đang đăng nhập Threads sẵn
-2. Vào topic "follow chéo" trên Threads
-3. Duyệt qua từng post → kiểm tra xem đã follow tác giả chưa
-4. Nếu chưa → **follow** → vào post → **comment "Đã follow ạ"**
-5. Lặp lại, cuộn xuống để tải thêm post
+Đây là cách đơn giản nhất, không cần đụng tới Terminal hay cài đặt Node.js.
+
+### Cài đặt:
+1. Mở Chrome, truy cập: `chrome://extensions/`
+2. Bật **Developer mode** (Góc trên bên phải).
+3. Nhấn **Load unpacked** và chọn thư mục: `/Users/admin/vietle/PersonalProject/threads/extension`
+4. Extension sẽ xuất hiện trên thanh công cụ với icon Threads ⚡.
+
+### Sử dụng:
+1. Mở [threads.com](https://www.threads.com) và đăng nhập tài khoản của bạn.
+2. Nhấn vào icon Extension.
+3. Chỉnh số lượng follow mong muốn và nội dung comment.
+4. Nhấn **▶ Start Bot**.
+5. Bạn có thể theo dõi tiến độ trực tiếp trong popup (Stats & Log).
 
 ---
 
-## Bước 1 — Khởi động Chrome với Remote Debug
+## 💻 Cách 2: Sử dụng Script Node.js (Nâng cao)
 
-**Tắt Chrome hoàn toàn trước**, rồi chạy lệnh này trong Terminal:
+Dành cho việc chạy bot thông qua CLI với khả năng tùy biến cao hơn.
 
+### Khởi động Chrome Debug:
+Chạy script helper để mở Chrome ở chế độ debug:
 ```bash
-/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
-  --remote-debugging-port=9222 \
-  --user-data-dir="/Users/admin/Library/Application Support/Google/Chrome"
+bash start-chrome.sh
 ```
 
-> Chrome sẽ mở với profile của bạn (đã đăng nhập Threads sẵn).
-
----
-
-## Bước 2 — Chạy Bot
-
-Mở một Terminal khác, vào thư mục project:
-
+### Chạy Bot:
+Mở một tab Terminal mới và chạy:
 ```bash
-cd /Users/admin/vietle/PersonalProject/threads
 node bot.js
 ```
 
 ---
 
-## Cấu hình (`bot.js` phần CONFIG)
+## ⚙️ Cấu hình
 
 | Tham số | Mặc định | Ý nghĩa |
 |---|---|---|
-| `maxPosts` | `50` | Số post tối đa mỗi lần chạy |
-| `commentText` | `"Đã follow ạ"` | Nội dung comment |
-| `delayBetweenPosts` | `4–9 giây` | Delay giữa các post (tránh bị block) |
-| `topicUrl` | follow chéo search | URL topic trên Threads |
+| `maxPosts` | `100` | Số post tối đa cho mỗi phiên chạy |
+| `commentText` | `"Đã follow ạ"` | Nội dung comment sau khi follow |
+| `delayBetweenPosts` | `2–4 giây` | Nghỉ giữa các bài viết (đã tối ưu 40% speed) |
+| `wiggleMoves` | `3–7 moves` | Di chuyển chuột ngẫu nhiên để tránh Captcha |
 
 ---
 
-## Lưu ý quan trọng
+## 🛡️ Tính năng An toàn (Anti-Detection)
 
-- ⚠️ **Không giảm delay quá thấp** — Threads có thể detect bot và khóa tài khoản
-- 🔄 **Chạy định kỳ** — Chạy 1–2 lần/ngày, mỗi lần 50 post là an toàn nhất
-- 💤 **Không chạy 24/7** — Hành vi bất thường sẽ bị flag
+- **Human-like Delay**: Delay được phân phối ngẫu nhiên (Skewed distribution) giống nhịp độ người thật.
+- **Mouse Wiggle**: Tự động di chuyển chuột ngẫu nhiên giữa các thao tác để đánh lừa hệ thống phát hiện bot.
+- **In-Feed Action**: Bot không chuyển trang liên tục mà hoạt động trực tiếp trên Feed, sau đó dùng `Back` để quay lại list, giống hành vi thủ công.
+- **Random Typing**: Tốc độ gõ comment có các khoảng nghỉ ngẫu nhiên giữa các phím.
+
+## ⚠️ Lưu ý quan trọng
+
+- **Không lạm dụng**: Mặc dù bot đã được tối ưu, Threads vẫn có giới hạn follow/giờ. Nên chạy tối đa 100-200 follow mỗi ngày.
+- **Threads.com**: Đảm bảo bạn đang sử dụng domain `.com` mới nhất của Threads.
+- **Tương tác lại**: Hãy thỉnh thoảng tương tác thủ công (like, scroll) để tài khoản trông tự nhiên hơn.
