@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Threads Chéo Follow Bot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-icon">⚡</div>
+      <div class="header-text">
+        <div class="title">Chéo Follow Bot</div>
+        <div class="subtitle">Threads Auto-Follow</div>
+      </div>
+      <div id="status-dot" class="status-dot idle" title="Idle"></div>
+    </div>
+
+    <!-- Config -->
+    <div class="section">
+      <div class="section-label">Settings</div>
+      <div class="config-grid">
+        <div class="config-item">
+          <label for="maxPosts">Max follows / run</label>
+          <input type="number" id="maxPosts" value="100" min="1" max="500" />
+        </div>
+        <div class="config-item">
+          <label for="commentText">Comment text</label>
+          <input type="text" id="commentText" value="Đã follow ạ" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="section">
+      <div class="section-label">Session Stats</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-followed">0</div>
+          <div class="stat-label">Followed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-commented">0</div>
+          <div class="stat-label">Commented</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-skipped">0</div>
+          <div class="stat-label">Skipped</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-errors">0</div>
+          <div class="stat-label">Errors</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="section">
+      <div class="section-label">Activity Log</div>
+      <div class="log" id="log">
+        <div class="log-entry idle-msg">Bot is idle. Press Start to begin.</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button id="btn-start" class="btn btn-start">▶ Start Bot</button>
+      <button id="btn-stop"  class="btn btn-stop" disabled>■ Stop</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

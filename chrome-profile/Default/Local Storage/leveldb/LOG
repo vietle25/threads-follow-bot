@@ -1,0 +1,12 @@
+2026/05/11-22:50:07.268 2b0718 Reusing MANIFEST /Users/admin/vietle/PersonalProject/threads/chrome-profile/Default/Local Storage/leveldb/MANIFEST-000001
+2026/05/11-22:50:07.276 2b0718 Recovering log #3
+2026/05/11-22:50:07.277 2b0718 Reusing old log /Users/admin/vietle/PersonalProject/threads/chrome-profile/Default/Local Storage/leveldb/000003.log 
+2026/05/11-23:22:47.323 2b071b Level-0 table #5: started
+2026/05/11-23:22:47.329 2b071b Level-0 table #5: 19999 bytes OK
+2026/05/11-23:22:47.337 2b071b Delete type=0 #3
+2026/05/12-21:23:48.726 2b071b Level-0 table #7: started
+2026/05/12-21:23:48.733 2b071b Level-0 table #7: 10623 bytes OK
+2026/05/12-21:23:48.738 2b071b Delete type=0 #4
+2026/05/12-21:47:36.794 2b071b Level-0 table #9: started
+2026/05/12-21:47:36.798 2b071b Level-0 table #9: 31756 bytes OK
+2026/05/12-21:47:36.803 2b071b Delete type=0 #6

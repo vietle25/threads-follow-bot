@@ -1,0 +1,6 @@
+2026/05/12-21:42:40.121 2b06c0 Creating DB /Users/admin/vietle/PersonalProject/threads/chrome-profile/Default/WebStorage/4/IndexedDB/indexeddb.leveldb since it was missing.
+2026/05/12-21:42:40.124 2b06c0 Reusing MANIFEST /Users/admin/vietle/PersonalProject/threads/chrome-profile/Default/WebStorage/4/IndexedDB/indexeddb.leveldb/MANIFEST-000001
+2026/05/12-21:43:31.584 2b06c2 Level-0 table #5: started
+2026/05/12-21:43:31.586 2b06c2 Level-0 table #5: 12725 bytes OK
+2026/05/12-21:43:31.588 2b06c2 Delete type=0 #3
+2026/05/12-21:43:31.588 2b06c2 Manual compaction at level-0 from (begin) .. (end); will stop at (end)
