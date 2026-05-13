@@ -194,17 +194,15 @@ function addLog(text, type = "") {
   broadcastToPopup({ type: "new-log", log: entry });
 }
 
-// ── Periodic License Check (Every 1 minute) ──────────────────────────────────
+// ── Periodic License Check (Every 5 seconds) ─────────────────────────────────
 setInterval(() => {
   if (state.license.active) {
     if (Date.now() > state.license.expiry) {
-      if (state.isRunning) stopBot();
       clearLicense();
-      addLog("🚨 Mã kích hoạt đã hết hạn! Bot đã dừng và xóa mã.", "error");
-      broadcastToPopup({ type: "state-changed", state });
+      addLog("🚨 Mã kích hoạt đã hết hạn!", "error");
     }
   }
-}, 60000);
+}, 5000);
 
 function clearLicense() {
   if (state.isRunning) {

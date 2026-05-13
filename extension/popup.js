@@ -149,3 +149,11 @@ chrome.runtime.onMessage.addListener((msg) => {
     appendLogToUI(msg.log);
   }
 });
+
+// Periodic refresh while popup is open
+setInterval(() => {
+  chrome.runtime.sendMessage({ action: "get-state" }, (state) => {
+    if (state) updateUIFromState(state);
+  });
+}, 2000);
+

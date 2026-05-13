@@ -212,30 +212,49 @@ async function postComment(replyBtnEl) {
   if (!botRunning) return false;
 
   log(`  💬 Typed: "${CONFIG.commentText}"`);
-  await delay(300, 750);
+  await delay(800, 1500); // Wait for "Post" button to enable
 
   // Try to find and click the Post/Submit button
-  const allBtns = Array.from(document.querySelectorAll('div[role="button"], button'));
-  const submitBtn = allBtns.find((b) => {
-    const t = (b.innerText || b.getAttribute("aria-label") || "").trim().toLowerCase();
-    return t === "post" || t === "reply" || t === "send" || t === "đăng" || t === "trả lời";
-  });
+  const findPostBtn = () => {
+    const allBtns = Array.from(document.querySelectorAll('div[role="button"], button'));
+    return allBtns.find((b) => {
+      const t = (b.innerText || b.getAttribute("aria-label") || "").trim().toLowerCase();
+      return ["post", "reply", "send", "đăng", "trả lời", "gửi"].includes(t);
+    });
+  };
 
+  let submitBtn = findPostBtn();
+  
   if (submitBtn) {
+    log("  👆 Clicking Post button...");
     submitBtn.click();
+    
+    // Wait for dialog to close (max 5s)
+    let modalGone = false;
+    for (let i = 0; i < 10; i++) {
+      await new Promise(r => setTimeout(r, 500));
+      if (!document.querySelector(SEL_INPUT)) {
+        modalGone = true;
+        break;
+      }
+      // Retry click if still there after 2s
+      if (i === 4) submitBtn.click(); 
+    }
   } else {
-    // Fallback: Enter key
+    log("  ⚠️ Post button not found, trying Enter key...", "warn");
     inputEl.dispatchEvent(new KeyboardEvent("keydown", {
       key: "Enter", code: "Enter", bubbles: true, cancelable: true
     }));
+    await delay(2000, 3000);
   }
 
   await rnd(CONFIG.delayAfterComment);
   humanMouseWiggle();
 
   // Go back to the feed
+  log("  🔙 Going back to feed...");
   history.back();
-  await delay(1000, 2000);
+  await delay(1500, 2500);
 
   return true;
 }
@@ -252,13 +271,12 @@ async function runBot() {
   log("🌐 Scanning feed for unfollowed posts...", "info");
 
   while (botRunning && processedAuthors.size < CONFIG.maxPosts) {
-    // 🛡️ SECURITY CHECK: Stop if license expired
+    // 🛡️ SECURITY CHECK
     if (EXPIRY_TIME && Date.now() > EXPIRY_TIME) {
-      log("🚨 Mã kích hoạt đã hết hạn! Bot đang dừng...", "error");
-      chrome.runtime.sendMessage({ type: "license-expired" }).catch(() => {});
-      botRunning = false;
+      stopBecauseExpired();
       break;
     }
+
     const unfollowed = collectUnfollowedPosts();
     const nextPost   = unfollowed.find((p) => !processedAuthors.has(p.authorHref));
 
