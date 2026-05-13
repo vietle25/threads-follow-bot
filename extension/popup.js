@@ -1,148 +1,112 @@
-// popup.js — communicates with the content script running on the Threads tab
+// popup.js — UI logic that syncs with background.js
 
 const $ = (id) => document.getElementById(id);
 
-let isRunning = false;
-let threadsTabId = null;
-
-// ── Restore saved config ──────────────────────────────────────────────────────
-chrome.storage.local.get(["maxPosts", "commentText"], (data) => {
-  if (data.maxPosts)    $("maxPosts").value    = data.maxPosts;
-  if (data.commentText) $("commentText").value = data.commentText;
-});
-
-// ── Logging ───────────────────────────────────────────────────────────────────
-function log(msg, type = "") {
-  const logEl = $("log");
-  const entry = document.createElement("div");
-  entry.className = "log-entry " + type;
-
-  const time = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  entry.textContent = `[${time}] ${msg}`;
-
-  // Remove idle placeholder
-  const idleMsg = logEl.querySelector(".idle-msg");
-  if (idleMsg) idleMsg.remove();
-
-  logEl.appendChild(entry);
-  logEl.scrollTop = logEl.scrollHeight;
-}
-
-function setStatus(state) {
-  const dot = $("status-dot");
-  dot.className = "status-dot " + state;
-}
-
-function updateStat(id, val) {
-  $(id).textContent = val;
-}
-
-// ── Find the active Threads tab ───────────────────────────────────────────────
-async function getThreadsTab() {
-  return new Promise((resolve) => {
-    chrome.tabs.query({ url: "https://www.threads.com/*" }, (tabs) => {
-      resolve(tabs.length > 0 ? tabs[0] : null);
-    });
+// ── Initialization ───────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", async () => {
+  // 1. Restore saved config from storage
+  chrome.storage.local.get(["maxPosts", "commentText"], (data) => {
+    if (data.maxPosts)    $("maxPosts").value    = data.maxPosts;
+    if (data.commentText) $("commentText").value = data.commentText;
   });
-}
 
-// ── Start ─────────────────────────────────────────────────────────────────────
-$("btn-start").addEventListener("click", async () => {
-  const tab = await getThreadsTab();
-  if (!tab) {
-    log("❌ No Threads tab found. Open threads.com first.", "error");
-    return;
-  }
-
-  threadsTabId = tab.id;
-  isRunning = true;
-
-  const config = {
-    maxPosts:    parseInt($("maxPosts").value)    || 100,
-    commentText: $("commentText").value.trim()    || "Đã follow ạ",
-  };
-
-  // Save config
-  chrome.storage.local.set(config);
-
-  // Update UI
-  $("btn-start").disabled = true;
-  $("btn-stop").disabled  = false;
-  setStatus("running");
-  log("🚀 Bot started!", "info");
-
-  // Reset stats display
-  ["stat-followed", "stat-commented", "stat-skipped", "stat-errors"].forEach(
-    (id) => updateStat(id, "0")
-  );
-
-  // Navigate to the chéo follow topic if not already there
-  const topicUrl = "https://www.threads.com/search?q=ch%C3%A9o+follow&serp_type=default";
-  if (!tab.url.includes("search?q=ch")) {
-    chrome.tabs.update(tab.id, { url: topicUrl });
-    // Wait for navigation before sending start message
-    await new Promise((resolve) => {
-      chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
-        if (tabId === tab.id && info.status === "complete") {
-          chrome.tabs.onUpdated.removeListener(listener);
-          resolve();
-        }
-      });
-    });
-    await new Promise((r) => setTimeout(r, 2000));
-  }
-
-  // Send start message to content script
-  chrome.tabs.sendMessage(tab.id, { action: "start", config }, (resp) => {
-    if (chrome.runtime.lastError) {
-      log("❌ Could not connect to Threads tab. Try refreshing the page.", "error");
-      resetUI();
+  // 2. Get current state from background script
+  chrome.runtime.sendMessage({ action: "get-state" }, (state) => {
+    if (state) {
+      updateUIFromState(state);
     }
   });
 });
 
-// ── Stop ──────────────────────────────────────────────────────────────────────
-$("btn-stop").addEventListener("click", () => {
-  if (threadsTabId) {
-    chrome.tabs.sendMessage(threadsTabId, { action: "stop" });
+function updateUIFromState(state) {
+  // Update Buttons & Dot
+  if (state.isRunning) {
+    $("btn-start").disabled = true;
+    $("btn-stop").disabled  = false;
+    $("status-dot").className = "status-dot running";
+  } else {
+    $("btn-start").disabled = false;
+    $("btn-stop").disabled  = true;
+    $("status-dot").className = "status-dot stopped";
   }
-  log("⏹ Stop requested...", "warn");
-});
 
-function resetUI() {
-  isRunning = false;
-  $("btn-start").disabled = false;
-  $("btn-stop").disabled  = true;
-  setStatus("stopped");
+  // Update Stats
+  updateStat("stat-followed",  state.stats.followed);
+  updateStat("stat-commented", state.stats.commented);
+  updateStat("stat-skipped",   state.stats.skipped);
+  updateStat("stat-errors",    state.stats.errors);
+
+  // Update Logs
+  const logEl = $("log");
+  logEl.innerHTML = "";
+  if (state.logs.length === 0) {
+    logEl.innerHTML = '<div class="log-entry idle-msg">Bot is idle. Press Start to begin.</div>';
+  } else {
+    state.logs.forEach(entry => appendLogToUI(entry));
+  }
 }
 
-// ── Listen for messages from content script ───────────────────────────────────
+// ── UI Helpers ───────────────────────────────────────────────────────────────
+function updateStat(id, val) {
+  $(id).textContent = val;
+}
+
+function appendLogToUI(entry) {
+  const logEl = $("log");
+  const div = document.createElement("div");
+  div.className = "log-entry " + (entry.type || "");
+  div.textContent = `[${entry.time}] ${entry.text}`;
+  
+  // Remove idle placeholder if it exists
+  const idleMsg = logEl.querySelector(".idle-msg");
+  if (idleMsg) idleMsg.remove();
+
+  logEl.appendChild(div);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+// ── Actions ──────────────────────────────────────────────────────────────────
+$("btn-start").addEventListener("click", async () => {
+  chrome.tabs.query({ url: "https://www.threads.com/*" }, async (tabs) => {
+    const tab = tabs[0];
+    if (!tab) {
+      alert("Please open threads.com first!");
+      return;
+    }
+
+    const config = {
+      maxPosts:    parseInt($("maxPosts").value)    || 100,
+      commentText: $("commentText").value.trim()    || "Đã follow ạ",
+    };
+
+    // Save config
+    chrome.storage.local.set(config);
+
+    // Tell background to start the bot
+    chrome.runtime.sendMessage({ 
+      action: "start-bot", 
+      tabId: tab.id, 
+      config 
+    });
+  });
+});
+
+$("btn-stop").addEventListener("click", () => {
+  chrome.runtime.sendMessage({ action: "stop-bot" });
+});
+
+// ── Listen for state updates from background ─────────────────────────────────
 chrome.runtime.onMessage.addListener((msg) => {
-  switch (msg.type) {
-    case "log":
-      log(msg.text, msg.level || "");
-      break;
-
-    case "stats":
-      updateStat("stat-followed",  msg.stats.followed);
-      updateStat("stat-commented", msg.stats.commented);
-      updateStat("stat-skipped",   msg.stats.skipped);
-      updateStat("stat-errors",    msg.stats.errors);
-      break;
-
-    case "done":
-      log("✅ Bot finished! " + (msg.reason || ""), "success");
-      resetUI();
-      setStatus("idle");
-      break;
-
-    case "stopped":
-      log("⏹ Bot stopped.", "warn");
-      resetUI();
-      break;
-
-    case "error":
-      log("❌ " + msg.text, "error");
-      break;
+  if (msg.type === "state-changed") {
+    updateUIFromState(msg.state);
+  }
+  if (msg.type === "stats-update") {
+    updateStat("stat-followed",  msg.stats.followed);
+    updateStat("stat-commented", msg.stats.commented);
+    updateStat("stat-skipped",   msg.stats.skipped);
+    updateStat("stat-errors",    msg.stats.errors);
+  }
+  if (msg.type === "new-log") {
+    appendLogToUI(msg.log);
   }
 });

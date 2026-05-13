@@ -330,6 +330,11 @@ async function runBot() {
 
 // ── Listen for messages from popup ───────────────────────────────────────────
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg.action === "ping") {
+    sendResponse({ pong: true });
+    return false;
+  }
+
   if (msg.action === "start") {
     if (botRunning) { sendResponse({ ok: false, reason: "already running" }); return; }
 

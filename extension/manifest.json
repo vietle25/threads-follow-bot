@@ -24,5 +24,8 @@
     }
   ],
   "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "background": {
+    "service_worker": "background.js"
+  },
   "host_permissions": ["https://www.threads.com/*"]
 }
