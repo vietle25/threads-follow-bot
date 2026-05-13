@@ -33,12 +33,16 @@ Nếu bạn nhận được tệp ZIP từ Admin, hãy làm theo các bước sa
 
 ---
 
-## 🛠 Cấu trúc dự án
-- `extension/manifest.json`: Cấu hình chính của Extension.
-- `extension/background.js`: Xử lý logic chạy ngầm, quản lý bản quyền.
-- `extension/content.js`: Thực hiện hành động trên trang Threads.com (Follow, Comment).
-- `extension/popup.html/css/js`: Giao diện điều khiển của người dùng.
-- `extension/icons/`: Chứa các biểu tượng thương hiệu.
+## 🔐 Bảo mật và Chống bẻ khóa (Security)
+
+Vì JavaScript có thể bị đọc dễ dàng, bạn **BẮT BUỘC** phải làm rối mã (Obfuscate) trước khi gửi cho khách hàng:
+
+1. Truy cập [javascript-obfuscator.org](https://obfuscator.io/)
+2. Lần lượt dán code của `background.js` và `content.js` vào để làm rối.
+3. Tải đoạn code đã bị làm rối về và thay thế vào thư mục `extension`.
+4. Sau đó mới tiến hành nén ZIP để gửi cho khách.
+
+Việc này sẽ khiến người dùng không thể đọc hiểu logic bên trong để tự ý bẻ khóa hoặc chỉnh sửa code của bạn.
 
 ---
 **Phát triển bởi Stev.en Lee**
