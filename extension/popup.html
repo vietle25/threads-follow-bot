@@ -10,6 +10,25 @@
 </head>
 <body>
   <div class="app">
+    <!-- License Screen Overlay -->
+    <div id="license-screen" class="overlay hidden">
+      <div class="activation-box">
+        <div class="activation-icon">🔐</div>
+        <h2>Kích hoạt Plugin</h2>
+        <p>Vui lòng nhập mã kích hoạt để sử dụng Bot.</p>
+        <div class="input-group">
+          <input type="text" id="license-input" placeholder="THREADS-XXXX-XXXX" />
+          <button id="btn-activate" class="btn btn-start">Kích hoạt ngay</button>
+        </div>
+        <div class="contact-links">
+          <p>Chưa có mã? Liên hệ Admin:</p>
+          <a href="https://www.threads.com/@stev.enlee3314" target="_blank">Threads Admin (@stev.enlee3314)</a>
+          <span class="price-tag">Giá: 50.000đ / 3 ngày</span>
+        </div>
+        <div id="license-error" class="error-msg"></div>
+      </div>
+    </div>
+
     <!-- Header -->
     <div class="header">
       <div class="header-icon">⚡</div>

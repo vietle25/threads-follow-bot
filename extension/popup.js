@@ -44,6 +44,14 @@ function updateUIFromState(state) {
   } else {
     state.logs.forEach(entry => appendLogToUI(entry));
   }
+
+  // License Screen logic
+  const screen = $("license-screen");
+  if (state.license && state.license.active) {
+    screen.classList.add("hidden");
+  } else {
+    screen.classList.remove("hidden");
+  }
 }
 
 // ── UI Helpers ───────────────────────────────────────────────────────────────
@@ -67,27 +75,58 @@ function appendLogToUI(entry) {
 
 // ── Actions ──────────────────────────────────────────────────────────────────
 $("btn-start").addEventListener("click", async () => {
-  chrome.tabs.query({ url: "https://www.threads.com/*" }, async (tabs) => {
-    const tab = tabs[0];
-    if (!tab) {
-      alert("Please open threads.com first!");
+  // Check license again before start (double safety)
+  chrome.runtime.sendMessage({ action: "get-state" }, (state) => {
+    if (!state.license || !state.license.active) {
+      $("license-screen").classList.remove("hidden");
       return;
     }
 
-    const config = {
-      maxPosts:    parseInt($("maxPosts").value)    || 100,
-      commentText: $("commentText").value.trim()    || "Đã follow ạ",
-    };
+    chrome.tabs.query({ url: "https://www.threads.com/*" }, async (tabs) => {
+      const tab = tabs[0];
+      if (!tab) {
+        alert("Please open threads.com first!");
+        return;
+      }
 
-    // Save config
-    chrome.storage.local.set(config);
+      const config = {
+        maxPosts:    parseInt($("maxPosts").value)    || 100,
+        commentText: $("commentText").value.trim()    || "Đã follow ạ",
+      };
 
-    // Tell background to start the bot
-    chrome.runtime.sendMessage({ 
-      action: "start-bot", 
-      tabId: tab.id, 
-      config 
+      // Save config
+      chrome.storage.local.set(config);
+
+      // Tell background to start the bot
+      chrome.runtime.sendMessage({ 
+        action: "start-bot", 
+        tabId: tab.id, 
+        config 
+      });
     });
+  });
+});
+
+$("btn-activate").addEventListener("click", () => {
+  const code = $("license-input").value.trim();
+  if (!code) return;
+
+  const btn = $("btn-activate");
+  const err = $("license-error");
+  
+  btn.disabled = true;
+  btn.textContent = "Đang kiểm tra...";
+  err.textContent = "";
+
+  chrome.runtime.sendMessage({ action: "activate", code }, (res) => {
+    btn.disabled = false;
+    btn.textContent = "Kích hoạt ngay";
+
+    if (res.ok) {
+      $("license-screen").classList.add("hidden");
+    } else {
+      err.textContent = res.reason === "Invalid code" ? "Mã không hợp lệ" : "Mã đã hết hạn hoặc lỗi kết nối";
+    }
   });
 });
 

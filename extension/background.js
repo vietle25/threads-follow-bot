@@ -4,17 +4,57 @@ let state = {
   isRunning: false,
   threadsTabId: null,
   stats: { followed: 0, skipped: 0, commented: 0, commentFailed: 0, errors: 0 },
-  logs: []
+  logs: [],
+  license: { active: false, code: null, expiry: null }
 };
+
+// Initialize license from storage
+chrome.storage.local.get("license", (data) => {
+  if (data.license) {
+    state.license = data.license;
+    // Immediate expiry check
+    if (Date.now() > state.license.expiry) {
+      state.license.active = false;
+    }
+  }
+});
+
+const API_URL = "https://script.google.com/macros/s/AKfycbyre_JtAgalx7HWZ70h_M7e-uNNHsYq4_TdTjDihtQFYyef57nH0NE3UFPFGJ-km-IW/exec";
 
 // ── Listen for messages from popup and content scripts ───────────────────────
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === "get-state") {
-    sendResponse(state);
-    return false;
+    chrome.storage.local.get("license", (data) => {
+      if (data.license) {
+        state.license = data.license;
+        // Check if still valid (millisecond precision)
+        if (Date.now() > state.license.expiry) {
+          state.license.active = false;
+        }
+      }
+      sendResponse(state);
+    });
+    return true;
+  }
+
+  if (msg.action === "activate") {
+    validateLicense(msg.code).then(res => {
+      if (res.valid) {
+        state.license = { active: true, code: msg.code, expiry: res.expiry };
+        chrome.storage.local.set({ license: state.license });
+        sendResponse({ ok: true, expiry: res.expiry });
+      } else {
+        sendResponse({ ok: false, reason: res.reason });
+      }
+    });
+    return true;
   }
 
   if (msg.action === "start-bot") {
+    if (!state.license.active) {
+      sendResponse({ ok: false, reason: "No active license" });
+      return false;
+    }
     startBotFlow(msg.tabId, msg.config);
     sendResponse({ ok: true });
     return false;
@@ -27,10 +67,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 
   if (msg.type === "log") { addLog(msg.text, msg.level); return false; }
-  if (msg.type === "stats") { 
-    state.stats = msg.stats; 
-    broadcastToPopup({ type: "stats-update", stats: state.stats }); 
-    return false; 
+  if (msg.type === "stats") {
+    state.stats = msg.stats;
+    broadcastToPopup({ type: "stats-update", stats: state.stats });
+    return false;
   }
   if (msg.type === "done") {
     state.isRunning = false;
@@ -51,7 +91,7 @@ async function startBotFlow(tabId, config) {
   state.threadsTabId = tabId;
   state.stats = { followed: 0, skipped: 0, commented: 0, commentFailed: 0, errors: 0 };
   state.logs = [];
-  
+
   addLog("🚀 Starting bot flow...", "info");
   broadcastToPopup({ type: "state-changed", state });
 
@@ -59,7 +99,7 @@ async function startBotFlow(tabId, config) {
     // 1. Ensure we are on the correct URL
     const topicUrl = "https://www.threads.com/search?q=ch%C3%A9o+follow&serp_type=default";
     const tab = await chrome.tabs.get(tabId);
-    
+
     if (!tab.url.includes("search?q=ch")) {
       addLog("🌐 Navigating to topic page...", "info");
       await chrome.tabs.update(tabId, { url: topicUrl });
@@ -77,7 +117,7 @@ async function startBotFlow(tabId, config) {
 
     // 2. Try to ping the content script
     let ready = await pingContentScript(tabId);
-    
+
     if (!ready) {
       addLog("💉 Injecting bot script...", "info");
       await chrome.scripting.executeScript({
@@ -135,10 +175,35 @@ function addLog(text, type = "") {
   broadcastToPopup({ type: "new-log", log: entry });
 }
 
+// ── Periodic License Check (Every 1 minute) ──────────────────────────────────
+setInterval(() => {
+  if (state.license.active) {
+    if (Date.now() > state.license.expiry) {
+      state.license.active = false;
+      chrome.storage.local.set({ license: state.license });
+      
+      if (state.isRunning) {
+        stopBot();
+        addLog("🚨 Mã kích hoạt đã hết hạn! Bot đã tự động dừng.", "error");
+        broadcastToPopup({ type: "state-changed", state });
+      }
+    }
+  }
+}, 60000); // Check every 60 seconds
+
 function getTime() {
   return new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
 function broadcastToPopup(msg) {
-  chrome.runtime.sendMessage(msg).catch(() => {});
+  chrome.runtime.sendMessage(msg).catch(() => { });
+}
+
+async function validateLicense(code) {
+  try {
+    const resp = await fetch(`${API_URL}?code=${code}`);
+    return await resp.json();
+  } catch (err) {
+    return { valid: false, reason: "Server connection error" };
+  }
 }
