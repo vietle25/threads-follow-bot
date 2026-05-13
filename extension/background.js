@@ -24,6 +24,10 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyre_JtAgalx7HWZ70h_M7e
 // ── Listen for messages from popup and content scripts ───────────────────────
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === "get-state") {
+    // Send CURRENT state immediately for fast UI response
+    sendResponse(state);
+
+    // Then silently check for updates in background
     chrome.storage.local.get("license", (data) => {
       if (data.license && data.license.code) {
         validateLicense(data.license.code).then(res => {
@@ -33,20 +37,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           } else {
             clearLicense();
           }
-          sendResponse(state);
         }).catch(() => {
-          if (Date.now() > data.license.expiry) {
+          if (data.license.expiry && Date.now() > data.license.expiry) {
             clearLicense();
-          } else {
-            state.license = data.license;
           }
-          sendResponse(state);
         });
-      } else {
-        sendResponse(state);
       }
     });
-    return true;
+    return false; // Already responded
   }
 
   if (msg.action === "activate") {

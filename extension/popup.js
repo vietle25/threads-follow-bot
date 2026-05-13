@@ -19,14 +19,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 function updateUIFromState(state) {
+  const btnStart = $("btn-start");
+  const btnStop = $("btn-stop");
+
   // Update Buttons & Dot
   if (state.isRunning) {
-    $("btn-start").disabled = true;
-    $("btn-stop").disabled  = false;
+    btnStart.disabled = true;
+    btnStart.innerHTML = '<span class="spinner"></span> Bot đang chạy...';
+    btnStop.disabled  = false;
     $("status-dot").className = "status-dot running";
   } else {
-    $("btn-start").disabled = false;
-    $("btn-stop").disabled  = true;
+    btnStart.disabled = false;
+    btnStart.innerHTML = "Start Bot";
+    btnStop.disabled  = true;
     $("status-dot").className = "status-dot stopped";
   }
 
@@ -75,9 +80,18 @@ function appendLogToUI(entry) {
 
 // ── Actions ──────────────────────────────────────────────────────────────────
 $("btn-start").addEventListener("click", async () => {
+  const btnStart = $("btn-start");
+  const originalText = btnStart.innerHTML;
+  
+  // 1. SHOW LOADING IMMEDIATELY
+  btnStart.disabled = true;
+  btnStart.innerHTML = '<span class="spinner"></span> Đang khởi động...';
+
   // Check license again before start (double safety)
   chrome.runtime.sendMessage({ action: "get-state" }, (state) => {
     if (!state.license || !state.license.active) {
+      btnStart.disabled = false;
+      btnStart.innerHTML = originalText;
       $("license-screen").classList.remove("hidden");
       return;
     }
@@ -85,6 +99,8 @@ $("btn-start").addEventListener("click", async () => {
     chrome.tabs.query({ url: "https://www.threads.com/*" }, async (tabs) => {
       const tab = tabs[0];
       if (!tab) {
+        btnStart.disabled = false;
+        btnStart.innerHTML = originalText;
         alert("Please open threads.com first!");
         return;
       }
@@ -102,6 +118,13 @@ $("btn-start").addEventListener("click", async () => {
         action: "start-bot", 
         tabId: tab.id, 
         config 
+      }, (res) => {
+        if (!res || !res.ok) {
+          // If fail, restore button
+          btnStart.disabled = false;
+          btnStart.innerHTML = originalText;
+          if (res && res.reason) alert(res.reason);
+        }
       });
     });
   });

@@ -212,40 +212,101 @@ async function postComment(replyBtnEl) {
   if (!botRunning) return false;
 
   log(`  💬 Typed: "${CONFIG.commentText}"`);
-  await delay(800, 1500); // Wait for "Post" button to enable
+  await delay(1000, 2000);
 
-  // Try to find and click the Post/Submit button
-  const findPostBtn = () => {
-    const allBtns = Array.from(document.querySelectorAll('div[role="button"], button'));
-    return allBtns.find((b) => {
-      const t = (b.innerText || b.getAttribute("aria-label") || "").trim().toLowerCase();
-      return ["post", "reply", "send", "đăng", "trả lời", "gửi"].includes(t);
+  // Helper to find the Reply/Post button based on exact Fingerprint
+  const findReplyButton = () => {
+    const dialog = inputEl.closest('div[role="dialog"]') || document;
+    const allSvgs = Array.from(dialog.querySelectorAll('svg'));
+    
+    // Find the SVG that matches the EXACT fingerprint provided by the user
+    const targetSvg = allSvgs.find(svg => {
+      const path = svg.querySelector('path');
+      const d = path ? path.getAttribute('d') : '';
+      const vb = svg.getAttribute('viewBox');
+      const al = svg.getAttribute('aria-label');
+      
+      // Strict matching based on user's HTML snippet
+      return (
+        (al === "Reply" || svg.querySelector('title')?.textContent === "Reply") &&
+        vb === "0 0 12 12" &&
+        d === "M1 6h10M1 6l4-4M1 6l4 4"
+      );
     });
+
+    if (targetSvg) {
+      return targetSvg.closest('div[role="button"]') || targetSvg.closest('button');
+    }
+
+    // Fallback: If strict match fails, try path only
+    const pathOnly = allSvgs.find(svg => svg.querySelector('path')?.getAttribute('d') === "M1 6h10M1 6l4-4M1 6l4 4");
+    if (pathOnly) return pathOnly.closest('div[role="button"]') || pathOnly.closest('button');
+
+    return null;
   };
 
-  let submitBtn = findPostBtn();
+  const attemptPost = () => {
+    const btn = findReplyButton();
+    if (btn) {
+      log("  👆 Clicking identified Reply button...");
+      btn.click();
+    } else {
+      log("  ⌨️ Button not found, trying Enter sequence...");
+      inputEl.focus();
+      const opts = { bubbles: true, cancelable: true, key: "Enter", code: "Enter", keyCode: 13, which: 13 };
+      inputEl.dispatchEvent(new KeyboardEvent("keydown", opts));
+      inputEl.dispatchEvent(new KeyboardEvent("keypress", opts));
+      inputEl.dispatchEvent(new KeyboardEvent("keyup", opts));
+    }
+  };
+
+  // Wait for Snackbar or Modal disappearance with Retries
+  let success = false;
+  let alreadyCounted = false; 
+  log("  ⏳ Waiting for confirmation (Snackbar)...");
   
-  if (submitBtn) {
-    log("  👆 Clicking Post button...");
-    submitBtn.click();
+  for (let i = 0; i < 15; i++) {
+    // Initial and retry attempts
+    if (i === 0 || i === 5 || i === 10) {
+      attemptPost();
+    }
+
+    await new Promise(r => setTimeout(r, 500));
     
-    // Wait for dialog to close (max 5s)
-    let modalGone = false;
-    for (let i = 0; i < 10; i++) {
-      await new Promise(r => setTimeout(r, 500));
-      if (!document.querySelector(SEL_INPUT)) {
-        modalGone = true;
+    // 1. Check if modal is gone
+    if (!document.querySelector(SEL_INPUT)) {
+      // If modal is gone, it's a good sign, but we still want to check snackbar if possible
+      if (i > 3) success = true; 
+    }
+    
+    // 2. Check for snackbar
+    const snackbars = document.querySelectorAll('div[role="status"], div[role="alert"]');
+    for (const sb of snackbars) {
+      const txt = sb.innerText.toLowerCase();
+      // Only count if it's the FINAL success message
+      const isSuccess = (txt.includes("posted") || txt.includes("đã đăng")) && 
+                        !txt.includes("posting") && 
+                        !txt.includes("đang đăng");
+      
+      if (isSuccess && !alreadyCounted) {
+        log("  ✨ Success confirmed via FINAL Snackbar!");
+        success = true;
+        alreadyCounted = true;
         break;
       }
-      // Retry click if still there after 2s
-      if (i === 4) submitBtn.click(); 
     }
+    
+    if (success && (alreadyCounted || i > 8)) break;
+  }
+
+  if (success) {
+    stats.commented++;
+    emitStats();
   } else {
-    log("  ⚠️ Post button not found, trying Enter key...", "warn");
-    inputEl.dispatchEvent(new KeyboardEvent("keydown", {
-      key: "Enter", code: "Enter", bubbles: true, cancelable: true
-    }));
-    await delay(2000, 3000);
+    log("  ⚠️ Post confirmation (Posted) not received.", "warn");
+    stats.commentFailed++;
+    emitStats();
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
   }
 
   await rnd(CONFIG.delayAfterComment);
@@ -256,7 +317,7 @@ async function postComment(replyBtnEl) {
   history.back();
   await delay(1500, 2500);
 
-  return true;
+  return success;
 }
 
 // ── Main bot loop ─────────────────────────────────────────────────────────────
@@ -321,10 +382,10 @@ async function runBot() {
         const commented = await postComment(replyBtnEl);
         if (commented) {
           log("  ✅ Commented!", "success");
-          stats.commented++;
+          // stats.commented is handled inside postComment to avoid double counting
         } else {
           log("  ⚠️ Comment failed.", "warn");
-          stats.commentFailed++;
+          // stats.commentFailed is handled inside postComment
         }
         emitStats();
       }
