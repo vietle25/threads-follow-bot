@@ -62,6 +62,19 @@ body {
   margin-top: 1px;
 }
 
+.guide-link {
+  font-size: 10px;
+  color: #6c63ff;
+  text-decoration: none;
+  margin-top: 3px;
+  display: block;
+  font-weight: 500;
+}
+
+.guide-link:hover {
+  text-decoration: underline;
+}
+
 .status-dot {
   width: 10px;
   height: 10px;
