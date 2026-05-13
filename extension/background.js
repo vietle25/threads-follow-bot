@@ -11,10 +11,10 @@ let state = {
 // Initialize license from storage
 chrome.storage.local.get("license", (data) => {
   if (data.license) {
-    state.license = data.license;
-    // Immediate expiry check
-    if (Date.now() > state.license.expiry) {
-      state.license.active = false;
+    if (Date.now() > data.license.expiry) {
+      clearLicense();
+    } else {
+      state.license = data.license;
     }
   }
 });
@@ -26,19 +26,20 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === "get-state") {
     chrome.storage.local.get("license", (data) => {
       if (data.license && data.license.code) {
-        // Re-validate with server to get latest expiry from Sheet
         validateLicense(data.license.code).then(res => {
           if (res.valid) {
             state.license = { active: true, code: data.license.code, expiry: res.expiry };
+            chrome.storage.local.set({ license: state.license });
           } else {
-            state.license.active = false;
+            clearLicense();
           }
-          chrome.storage.local.set({ license: state.license });
           sendResponse(state);
         }).catch(() => {
-          // If server error, fallback to local check
-          if (Date.now() > data.license.expiry) data.license.active = false;
-          state.license = data.license;
+          if (Date.now() > data.license.expiry) {
+            clearLicense();
+          } else {
+            state.license = data.license;
+          }
           sendResponse(state);
         });
       } else {
@@ -62,10 +63,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 
   if (msg.action === "start-bot") {
-    // Final check before starting
     if (!state.license.active || Date.now() > state.license.expiry) {
-      state.license.active = false;
-      chrome.storage.local.set({ license: state.license });
+      clearLicense();
       sendResponse({ ok: false, reason: "Mã đã hết hạn sử dụng" });
       broadcastToPopup({ type: "state-changed", state });
       return false;
@@ -194,17 +193,23 @@ function addLog(text, type = "") {
 setInterval(() => {
   if (state.license.active) {
     if (Date.now() > state.license.expiry) {
-      state.license.active = false;
-      chrome.storage.local.set({ license: state.license });
-      
-      if (state.isRunning) {
-        stopBot();
-        addLog("🚨 Mã kích hoạt đã hết hạn! Bot đã tự động dừng.", "error");
-        broadcastToPopup({ type: "state-changed", state });
-      }
+      if (state.isRunning) stopBot();
+      clearLicense();
+      addLog("🚨 Mã kích hoạt đã hết hạn! Bot đã dừng và xóa mã.", "error");
+      broadcastToPopup({ type: "state-changed", state });
     }
   }
-}, 60000); // Check every 60 seconds
+}, 60000);
+
+function clearLicense() {
+  if (state.isRunning) {
+    stopBot();
+    addLog("🚨 Mã hết hạn! Bot đã bị dừng.", "error");
+  }
+  state.license = { active: false, code: null, expiry: null };
+  chrome.storage.local.remove("license");
+  broadcastToPopup({ type: "state-changed", state });
+}
 
 function getTime() {
   return new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
