@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threads Chéo Follow Bot - Cho đi để nhận lại</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --card-bg: #ffffff;
+            --text-color: #000000;
+            --text-dim: #666666;
+            --primary: #000000;
+            --accent: #00d2ff;
+            --border: #eeeeee;
+            --shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        nav {
+            padding: 24px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo img {
+            width: 32px;
+            height: 32px;
+        }
+
+        .hero {
+            padding: 100px 0 60px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            color: var(--text-color);
+            letter-spacing: -1px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: var(--text-dim);
+            max-width: 700px;
+            margin: 0 auto 40px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: #fff;
+            padding: 14px 32px;
+            border-radius: 100px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.2s, opacity 0.2s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 80px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 32px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: box-shadow 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow);
+        }
+
+        .card .icon { font-size: 32px; margin-bottom: 20px; }
+        .card h3 { margin-bottom: 12px; font-size: 20px; }
+        .card p { color: var(--text-dim); font-size: 14px; }
+
+        .notes-box {
+            background: #f9f9f9;
+            border: 1px solid var(--border);
+            padding: 40px;
+            border-radius: 24px;
+            margin-bottom: 80px;
+        }
+
+        .notes-box h3 {
+            color: var(--text-color);
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .notes-box ul { list-style: none; }
+        .notes-box li {
+            margin-bottom: 16px;
+            padding-left: 30px;
+            position: relative;
+            color: var(--text-dim);
+            font-size: 15px;
+        }
+
+        .notes-box li::before {
+            content: "✓";
+            color: #000000;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .steps { margin-bottom: 80px; }
+        .section-title { text-align: center; margin-bottom: 48px; }
+
+        .step-item {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .step-num {
+            background: #000;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 { margin-bottom: 4px; color: var(--text-color); }
+        .step-content p { color: var(--text-dim); font-size: 14px; }
+
+        .contact-card {
+            background: #000;
+            color: #fff;
+            padding: 60px;
+            border-radius: 32px;
+            margin-bottom: 60px;
+            text-align: center;
+        }
+
+        .contact-card h2 { font-size: 32px; margin-bottom: 16px; }
+        .price { font-size: 24px; font-weight: 700; margin-bottom: 32px; opacity: 0.9; }
+
+        footer {
+            padding: 60px 0;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 14px;
+            border-top: 1px solid var(--border);
+        }
+
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #000;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <nav>
+            <div class="logo">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/9/9d/Threads_(app)_logo.svg" alt="Threads Logo">
+                Threads Follow Bot
+            </div>
+            <a href="https://www.threads.com/@stev.enlee3314" class="btn" style="padding: 10px 20px; font-size: 13px;">Liên hệ Admin</a>
+        </nav>
+
+        <section class="hero">
+            <h1>Cho đi để nhận lại.</h1>
+            <p>Để tận dụng sức mạnh follow chéo của nền tảng Threads, hãy sử dụng Bot để tự động hóa quy trình: Follow chéo người khác và đợi người ta trả follow lại một cách chuyên nghiệp.</p>
+            <a href="#install" class="btn">Bắt đầu ngay</a>
+        </section>
+
+        <section class="grid">
+            <div class="card">
+                <div class="icon">🤝</div>
+                <h3>Cùng nhau phát triển</h3>
+                <p>Tận dụng sức mạnh cộng đồng để cùng nhau tăng trưởng tài khoản nhanh chóng.</p>
+            </div>
+            <div class="card">
+                <div class="icon">🤖</div>
+                <h3>Tự động hóa 100%</h3>
+                <p>Tiết kiệm hàng giờ đồng hồ mỗi ngày bằng việc tự động hóa các thao tác thủ công.</p>
+            </div>
+            <div class="card">
+                <div class="icon">📈</div>
+                <h3>Tương tác thật</h3>
+                <p>Tăng trưởng tự nhiên dựa trên tương tác thật giữa người dùng trong cùng chủ đề.</p>
+            </div>
+        </section>
+
+        <section class="notes-box">
+            <h3>⚠️ Lưu ý quan trọng khi sử dụng</h3>
+            <ul>
+                <li>Không lạm dụng quá nhiều để tránh bị Threads block hoặc hạn chế tính năng tài khoản.</li>
+                <li>Giới hạn khuyên dùng là 150-200 lượt follow mỗi ngày để đạt hiệu quả an toàn nhất.</li>
+                <li>Luôn sử dụng tính năng "Nghỉ ngẫu nhiên" đã được tích hợp sẵn trong Bot để mô phỏng người dùng thật.</li>
+                <li>Nên thay đổi nội dung "Comment text" thường xuyên để tránh bị hệ thống quét spam.</li>
+            </ul>
+        </section>
+
+        <section id="install" class="steps">
+            <div class="section-title">
+                <h2>Hướng dẫn cài đặt Bot</h2>
+            </div>
+            
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <h4>Tải và Giải nén (Download & Extract)</h4>
+                    <p>Tải tệp ZIP từ Admin và giải nén ra một thư mục trên máy tính của bạn.</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <h4>Mở Quản lý tiện ích (Chrome Extensions)</h4>
+                    <p>Truy cập địa chỉ <code>chrome://extensions/</code> và bật <code>"Developer Mode"</code> (Chế độ nhà phát triển) ở góc trên bên phải.</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <h4>Cài đặt Bot (Load Unpacked)</h4>
+                    <p>Nhấn vào nút <code>"Load unpacked"</code> (Tải tiện ích đã giải nén) và tìm đến thư mục <code>extension</code> bạn vừa giải nén.</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">4</div>
+                <div class="step-content">
+                    <h4>Kích hoạt và Chạy Bot</h4>
+                    <p>Mở Bot trên thanh công cụ, nhập mã kích hoạt nhận từ Admin và nhấn <code>Start Bot</code> để bắt đầu.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="contact-card">
+            <h2>Sẵn sàng bùng nổ Follow?</h2>
+            <p>Liên hệ ngay để nhận mã kích hoạt và hướng dẫn chi tiết từ chúng tôi.</p>
+            <div class="price">Chỉ 50.000đ / 3 Ngày sử dụng</div>
+            <a href="https://www.threads.com/@stev.enlee3314" target="_blank" class="btn" style="background: #fff; color: #000;">Mua mã kích hoạt ngay</a>
+        </section>
+
+        <footer>
+            <p>&copy; 2026 Threads Chéo Follow Bot. Thiết kế bởi Stev.en Lee.</p>
+        </footer>
+    </div>
+
+</body>
+</html>

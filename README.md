@@ -1,64 +1,44 @@
-# Threads Follow-Chéo Bot 🤖
+# Threads Chéo Follow Bot (Extension)
 
-Bộ công cụ tự động hóa quá trình "follow chéo" trên Threads để tăng follow hiệu quả và an toàn.
+Công cụ tự động hóa giúp tăng Follow trên Threads bằng cách tự động Follow và Comment vào các bài viết trong chủ đề "Chéo Follow".
 
-## 🚀 Cách 1: Sử dụng Chrome Extension (Khuyên dùng)
+## 🚀 Hướng dẫn cài đặt cho Người dùng
 
-Đây là cách đơn giản nhất, không cần đụng tới Terminal hay cài đặt Node.js.
+Nếu bạn nhận được tệp ZIP từ Admin, hãy làm theo các bước sau:
 
-### Cài đặt:
-1. Mở Chrome, truy cập: `chrome://extensions/`
-2. Bật **Developer mode** (Góc trên bên phải).
-3. Nhấn **Load unpacked** và chọn thư mục: `/Users/admin/vietle/PersonalProject/threads/extension`
-4. Extension sẽ xuất hiện trên thanh công cụ với icon Threads ⚡.
-
-### Sử dụng:
-1. Mở [threads.com](https://www.threads.com) và đăng nhập tài khoản của bạn.
-2. Nhấn vào icon Extension.
-3. Chỉnh số lượng follow mong muốn và nội dung comment.
-4. Nhấn **▶ Start Bot**.
-5. Bạn có thể theo dõi tiến độ trực tiếp trong popup (Stats & Log).
+1. **Giải nén** tệp ZIP ra một thư mục trên máy tính.
+2. Mở Chrome và truy cập: `chrome://extensions/`
+3. Bật **Developer Mode** (Chế độ nhà phát triển) ở góc trên bên phải.
+4. Chọn **Load unpacked** (Tải tiện ích đã giải nén).
+5. Tìm đến thư mục `extension` vừa giải nén và nhấn **Select Folder**.
+6. Ghim (Pin) tiện ích lên thanh công cụ, mở lên và nhập **Mã kích hoạt** để bắt đầu.
 
 ---
 
-## 💻 Cách 2: Sử dụng Script Node.js (Nâng cao)
+## 📦 Cách đóng gói để gửi cho khách hàng
 
-Dành cho việc chạy bot thông qua CLI với khả năng tùy biến cao hơn.
-
-### Khởi động Chrome Debug:
-Chạy script helper để mở Chrome ở chế độ debug:
-```bash
-bash start-chrome.sh
-```
-
-### Chạy Bot:
-Mở một tab Terminal mới và chạy:
-```bash
-node bot.js
-```
+1. Vào thư mục dự án.
+2. Nén toàn bộ nội dung bên trong thư mục `extension/` thành tệp `ThreadsBot.zip`.
+3. Gửi tệp này cho khách hàng kèm theo hướng dẫn ở trên.
 
 ---
 
-## ⚙️ Cấu hình
+## 🌍 Cách đưa lên Chrome Web Store (Public)
 
-| Tham số | Mặc định | Ý nghĩa |
-|---|---|---|
-| `maxPosts` | `100` | Số post tối đa cho mỗi phiên chạy |
-| `commentText` | `"Đã follow ạ"` | Nội dung comment sau khi follow |
-| `delayBetweenPosts` | `2–4 giây` | Nghỉ giữa các bài viết (đã tối ưu 40% speed) |
-| `wiggleMoves` | `3–7 moves` | Di chuyển chuột ngẫu nhiên để tránh Captcha |
+1. Truy cập [Chrome Web Store Developer Console](https://chrome.google.com/webstore/devconsole/).
+2. Thanh toán phí 5$ cho Google (nếu là lần đầu).
+3. Tạo "New Item" và tải tệp `ThreadsBot.zip` lên.
+4. Điền mô tả, tải ảnh Screenshots (tỉ lệ 1280x800 hoặc 640x400).
+5. Nhấn **Submit for Review** và đợi Google phê duyệt.
 
 ---
 
-## 🛡️ Tính năng An toàn (Anti-Detection)
+## 🛠 Cấu trúc dự án
+- `extension/manifest.json`: Cấu hình chính của Extension.
+- `extension/background.js`: Xử lý logic chạy ngầm, quản lý bản quyền.
+- `extension/content.js`: Thực hiện hành động trên trang Threads.com (Follow, Comment).
+- `extension/popup.html/css/js`: Giao diện điều khiển của người dùng.
+- `extension/icons/`: Chứa các biểu tượng thương hiệu.
 
-- **Human-like Delay**: Delay được phân phối ngẫu nhiên (Skewed distribution) giống nhịp độ người thật.
-- **Mouse Wiggle**: Tự động di chuyển chuột ngẫu nhiên giữa các thao tác để đánh lừa hệ thống phát hiện bot.
-- **In-Feed Action**: Bot không chuyển trang liên tục mà hoạt động trực tiếp trên Feed, sau đó dùng `Back` để quay lại list, giống hành vi thủ công.
-- **Random Typing**: Tốc độ gõ comment có các khoảng nghỉ ngẫu nhiên giữa các phím.
-
-## ⚠️ Lưu ý quan trọng
-
-- **Không lạm dụng**: Mặc dù bot đã được tối ưu, Threads vẫn có giới hạn follow/giờ. Nên chạy tối đa 100-200 follow mỗi ngày.
-- **Threads.com**: Đảm bảo bạn đang sử dụng domain `.com` mới nhất của Threads.
-- **Tương tác lại**: Hãy thỉnh thoảng tương tác thủ công (like, scroll) để tài khoản trông tự nhiên hơn.
+---
+**Phát triển bởi Stev.en Lee**
