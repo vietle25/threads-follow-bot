@@ -105,9 +105,28 @@ $("btn-start").addEventListener("click", async () => {
         return;
       }
 
+      const commentText = $("commentText").value.trim();
+      
+      // 1. Validate No Links
+      const linkRegex = /(https?:\/\/|www\.|[a-z0-9]+\.[a-z]{2,})/gi;
+      if (linkRegex.test(commentText)) {
+        btnStart.disabled = false;
+        btnStart.innerHTML = originalText;
+        alert("Nội dung comment không được chứa đường link để tránh bị khóa tài khoản!");
+        return;
+      }
+
+      // 2. Validate Empty
+      if (!commentText) {
+        btnStart.disabled = false;
+        btnStart.innerHTML = originalText;
+        alert("Vui lòng nhập nội dung comment!");
+        return;
+      }
+
       const config = {
         maxPosts:    parseInt($("maxPosts").value)    || 100,
-        commentText: $("commentText").value.trim()    || "Đã follow ạ",
+        commentText: commentText,
       };
 
       // Save config

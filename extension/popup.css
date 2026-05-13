@@ -62,16 +62,23 @@ body {
   margin-top: 1px;
 }
 
-.guide-link {
-  font-size: 10px;
-  color: #6c63ff;
-  text-decoration: none;
-  margin-top: 3px;
+.contact-links a {
   display: block;
-  font-weight: 500;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 13px;
+  margin-bottom: 6px;
+  transition: color 0.2s;
 }
 
-.guide-link:hover {
+.contact-links a.promo-link {
+  color: #6c63ff;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.contact-links a:hover {
+  color: #fff;
   text-decoration: underline;
 }
 
