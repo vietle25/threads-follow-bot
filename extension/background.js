@@ -25,14 +25,25 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyre_JtAgalx7HWZ70h_M7e
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === "get-state") {
     chrome.storage.local.get("license", (data) => {
-      if (data.license) {
-        state.license = data.license;
-        // Check if still valid (millisecond precision)
-        if (Date.now() > state.license.expiry) {
-          state.license.active = false;
-        }
+      if (data.license && data.license.code) {
+        // Re-validate with server to get latest expiry from Sheet
+        validateLicense(data.license.code).then(res => {
+          if (res.valid) {
+            state.license = { active: true, code: data.license.code, expiry: res.expiry };
+          } else {
+            state.license.active = false;
+          }
+          chrome.storage.local.set({ license: state.license });
+          sendResponse(state);
+        }).catch(() => {
+          // If server error, fallback to local check
+          if (Date.now() > data.license.expiry) data.license.active = false;
+          state.license = data.license;
+          sendResponse(state);
+        });
+      } else {
+        sendResponse(state);
       }
-      sendResponse(state);
     });
     return true;
   }
@@ -51,8 +62,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 
   if (msg.action === "start-bot") {
-    if (!state.license.active) {
-      sendResponse({ ok: false, reason: "No active license" });
+    // Final check before starting
+    if (!state.license.active || Date.now() > state.license.expiry) {
+      state.license.active = false;
+      chrome.storage.local.set({ license: state.license });
+      sendResponse({ ok: false, reason: "Mã đã hết hạn sử dụng" });
+      broadcastToPopup({ type: "state-changed", state });
       return false;
     }
     startBotFlow(msg.tabId, msg.config);
