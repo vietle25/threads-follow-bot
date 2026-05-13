@@ -80,6 +80,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return false;
   }
 
+  if (msg.type === "license-expired") {
+    clearLicense();
+    return false;
+  }
+
   if (msg.type === "log") { addLog(msg.text, msg.level); return false; }
   if (msg.type === "stats") {
     state.stats = msg.stats;
@@ -142,7 +147,7 @@ async function startBotFlow(tabId, config) {
     }
 
     // 3. Start the bot
-    chrome.tabs.sendMessage(tabId, { action: "start", config }, (resp) => {
+    chrome.tabs.sendMessage(tabId, { action: "start", config, expiry: state.license.expiry }, (resp) => {
       if (chrome.runtime.lastError) {
         addLog("❌ Connection failed. Please refresh the Threads page and try again.", "error");
         state.isRunning = false;

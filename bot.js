@@ -23,11 +23,11 @@ const CONFIG = {
 
   // Delays (ms) — reduced by ~40%
   delayBetweenPosts: { min: 2100, max: 4400 },
-  delayAfterClickPlus: { min: 480, max: 1320 },
-  delayAfterFollow: { min: 600, max: 2100 },
-  delayBeforeComment: { min: 480, max: 1800 },
-  delayAfterComment: { min: 900, max: 2100 },
-  delayScroll: { min: 720, max: 1500 },
+  delayAfterClickPlus: { min: 1200, max: 1420 },
+  delayAfterFollow: { min: 950, max: 1200 },
+  delayBeforeComment: { min: 710, max: 940 },
+  delayAfterComment: { min: 530, max: 710 },
+  delayScroll: { min: 1600, max: 2500 },
 
   // Mouse wiggle: how many random moves per wiggle call
   wiggleMoves: { min: 3, max: 7 },

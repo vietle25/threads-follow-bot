@@ -7,6 +7,7 @@
 // ── State ─────────────────────────────────────────────────────────────────────
 let botRunning = false;
 let CONFIG     = {};
+let EXPIRY_TIME = null;
 
 // ── Messaging helpers ─────────────────────────────────────────────────────────
 const send = (type, data = {}) => {
@@ -251,6 +252,13 @@ async function runBot() {
   log("🌐 Scanning feed for unfollowed posts...", "info");
 
   while (botRunning && processedAuthors.size < CONFIG.maxPosts) {
+    // 🛡️ SECURITY CHECK: Stop if license expired
+    if (EXPIRY_TIME && Date.now() > EXPIRY_TIME) {
+      log("🚨 Mã kích hoạt đã hết hạn! Bot đang dừng...", "error");
+      chrome.runtime.sendMessage({ type: "license-expired" }).catch(() => {});
+      botRunning = false;
+      break;
+    }
     const unfollowed = collectUnfollowedPosts();
     const nextPost   = unfollowed.find((p) => !processedAuthors.has(p.authorHref));
 
@@ -349,6 +357,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       delayAfterComment: { min: 900,  max: 3000  },
     };
 
+    EXPIRY_TIME = msg.expiry; // Set global expiry
     botRunning = true;
     sendResponse({ ok: true });
     runBot();
