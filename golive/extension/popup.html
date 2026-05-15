@@ -47,14 +47,14 @@
 
     <!-- Config -->
     <div class="section">
-      <div class="section-label">Settings</div>
+      <div class="section-label">Cài đặt</div>
       <div class="config-grid">
         <div class="config-item">
-          <label for="maxPosts">Max follows / run</label>
+          <label for="maxPosts">Số lượt Follow / lần</label>
           <input type="number" id="maxPosts" value="100" min="1" max="500" />
         </div>
         <div class="config-item">
-          <label for="commentText">Comment text (max 25 chars)</label>
+          <label for="commentText">Nội dung Comment<br><small>(tối đa 25 ký tự)</small></label>
           <input type="text" id="commentText" value="Đã follow ạ" maxlength="25" />
         </div>
       </div>
@@ -62,32 +62,32 @@
 
     <!-- Stats -->
     <div class="section">
-      <div class="section-label">Session Stats</div>
+      <div class="section-label">Thống kê lượt chạy</div>
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-value" id="stat-followed">0</div>
-          <div class="stat-label">Followed</div>
+          <div class="stat-label">Đã Follow</div>
         </div>
         <div class="stat-card">
           <div class="stat-value" id="stat-commented">0</div>
-          <div class="stat-label">Commented</div>
+          <div class="stat-label">Đã Comment</div>
         </div>
         <div class="stat-card">
           <div class="stat-value" id="stat-skipped">0</div>
-          <div class="stat-label">Skipped</div>
+          <div class="stat-label">Bỏ qua</div>
         </div>
         <div class="stat-card">
           <div class="stat-value" id="stat-errors">0</div>
-          <div class="stat-label">Errors</div>
+          <div class="stat-label">Lỗi</div>
         </div>
       </div>
     </div>
 
     <!-- Log -->
     <div class="section">
-      <div class="section-label">Activity Log</div>
+      <div class="section-label">Nhật ký hoạt động</div>
       <div class="log" id="log">
-        <div class="log-entry idle-msg">Bot is idle. Press Start to begin.</div>
+        <div class="log-entry idle-msg">Bot đang nghỉ. Nhấn Bắt đầu để chạy.</div>
       </div>
     </div>
 
